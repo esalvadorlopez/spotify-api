@@ -8,28 +8,36 @@ from pandas import json_normalize
 j = open("./access.json", "r")
 access = json.load(j)
 
-
+#User Info
 client_id = access['client_id']
 client_secret = access['client_secret']
+
+#Parsing user info B64encode
 client_creds = f"{client_id}:{client_secret}"
 client_creds_b64 = base64.b64encode(client_creds.encode())
 
 def main():
+    #Getting access token from spotify
     token_url = 'https://accounts.spotify.com/api/token'
     params = {'grant_type':'client_credentials'}
     headers = {'Authorization': f'Basic {client_creds_b64.decode()}'}
     response_token = requests.post(token_url,data=params,headers=headers)
     access_token = response_token.json()['access_token']
 
+    #Creating headers with authorization
     headers = {'Authorization' : f'Bearer {access_token}'}
 
+    #Asking for an artist and formating the input
     search_input = str(input("ESCRIBE UN ARTISTA MUSICAL: ").replace(' ','+'))
 
+    #Getting artist id    
     def get_artist_id():
         url_search='https://api.spotify.com/v1/search'
         search_params={'q':f"{search_input}",'type':'artist','market':'MX'}
+        
         search=requests.get(url_search,headers=headers,params=search_params)
         raw_df = pd.DataFrame(search.json()['artists']['items'])
+
         return raw_df.iloc[0]['id']
 
 
